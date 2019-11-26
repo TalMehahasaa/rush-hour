@@ -39,8 +39,40 @@ class BoardLogic:
         print("****************")
 
     @staticmethod
-    def change_board(car, move, values):
-        if move in BoardLogic.possible_moves(car, values):
+    def car_moves(car, values):
+        possible_moves = []
+        if car.direction == Direction.horizontal:
+            line = values[car.positions[0][0]]  # Get the row the car is in
+            indices_of_car = list(zip(*car.positions))[1]  # The indices of the car in the row
+        else:
+            line = [values[i][car.positions[0][1]] for i in
+                    range(Constants.SIZE)]  # Get the column the car is in
+            indices_of_car = list(zip(*car.positions))[0]  # The indices of the car in the column
+
+        first = indices_of_car[0]  # The first index of the car
+        last = indices_of_car[-1]  # The last index of the car
+
+        counter = 1
+        for index in range(first - 1, -1, -1):  # Check moves before car
+            if line[index] == "_":  # The cell is empty
+                possible_moves.append(-counter)
+                counter += 1
+            else:  # The cell contains a car
+                break
+
+        counter = 1
+        for index in range(last + 1, Constants.SIZE):  # Check moves after car
+            if line[index] == "_":  # The cell is empty
+                possible_moves.append(counter)
+                counter += 1
+            else:  # The cell contains a car
+                break
+
+        return possible_moves
+
+    @staticmethod
+    def next_board(car, move, values):
+        if move in BoardLogic.car_moves(car, values):  # If the move is valid
             new_positions = []
             for i, j in car.positions:
                 if car.direction == Direction.vertical:
@@ -58,33 +90,9 @@ class BoardLogic:
             return new_values
 
     @staticmethod
-    def possible_moves(car, values):
-        possible_moves = []
-        if car.direction == Direction.horizontal:
-            line = values[car.positions[0][0]]  # Get the row the car is in
-            indices_of_car = list(zip(*car.positions))[1]  # The indices of the car in the row
-        else:
-            line = [car.board.values[i][car.positions[0][1]] for i in
-                    range(Constants.SIZE)]  # Get the column the car is in
-            indices_of_car = list(zip(*car.positions))[0]  # The indices of the car in the column
-
-        first = indices_of_car[0]  # The first index of the car
-        last = indices_of_car[-1]  # The last index of the car
-
-        counter = 1
-        for index in range(first - 1, -1, -1):
-            if line[index] == "_":  # The cell is empty
-                possible_moves.append(-counter)
-                counter += 1
-            else:  # The cell has a car
-                break
-
-        counter = 1
-        for index in range(last + 1, Constants.SIZE):
-            if line[index] == "_":  # The cell is empty
-                possible_moves.append(counter)
-                counter += 1
-            else:
-                break
-
-        return possible_moves
+    def next_boards(cars, values):
+        next_boards = []
+        for car in cars:
+            for move in BoardLogic.car_moves(car, values):
+                next_boards.append(BoardLogic.next_board(car, move, values))
+        return next_boards
