@@ -8,93 +8,64 @@ class KivyBoard(GridLayout):
     def __init__(self):
         super().__init__()
         self.cols = Constants.SIZE
-        self.board = Board()
+        self.values = None
+        self.cars_info = None
+        self._create_starting_board()
+
         self.tiles = []
         for i in range(Constants.SIZE):
             row = []
             for j in range(Constants.SIZE):
-                tile = KivyTile((i, j), self.board)
+                tile = KivyTile((i, j), self.cars_info, self)
                 row.append(tile)
                 self.add_widget(tile)
             self.tiles.append(row)
 
-    def redraw(self):
-        for i in range(Constants.SIZE):
-            for j in range(Constants.SIZE):
-                self.tiles[i][j].change_color(Constants.COLORS[self.board.values[i][j]])
+    def _create_starting_board(self):
+        self.values = [
+            ["_"] * 4,
+            ["X", "X", "_", "A"],
+            ["B", "_", "_", "A"],
+            ["B", "P", "P", "P"]
+        ]
+        self.cars_info = {
+            "X": (Direction.horizontal, 2),
+            "A": (Direction.vertical, 2),
+            "B": (Direction.vertical, 2),
+            "P": (Direction.horizontal, 3)
+        }
 
-
-class Board:
-    def __init__(self):
-        self.values = [["_" for _ in range(Constants.SIZE)] for _ in range(Constants.SIZE)]
-        self.cars = []
-        self.generate_board()
-
-        for car in self.cars:
-            BoardLogic.car_moves(car, self.values)
-
-        BoardLogic.print_board(self.values)
-
-    def generate_board(self):
-        # TODO: Generate a random board by choosing a difficulty
-        # Difficulties: Easy- 10, Medium- 30, Hard- 50, Expert- 100
-        self.cars.append(Car('P', (0, 0), 3, Direction.vertical))
-        self.cars.append(Car("B", (4, 0), 2, Direction.vertical))
-        self.cars.append(Car("A", (0, 1), 2, Direction.horizontal))
-        self.cars.append(Car("X", (2, 1), 2, Direction.horizontal))
-        self.cars.append(Car("C", (4, 1), 2, Direction.horizontal))
-        self.cars.append(Car("Q", (1, 3), 3, Direction.vertical))
-        self.cars.append(Car("R", (5, 2), 3, Direction.horizontal))
-        self.cars.append(Car("O", (3, 5), 3, Direction.vertical))
-
-        for car in self.cars:
-            for i, j in car.positions:
-                self.values[i][j] = car.value
-
-
-class Car:
-    def __init__(self, value, pos, length, direction):
-        self.value = value
-        self.direction = direction
-        self.length = length
-        self.positions = self._find_positions(pos)
-
-    def _find_positions(self, pos):
-        positions = []
-        for offset in range(self.length):
-            if self.direction == Direction.horizontal:
-                positions.append((pos[0], pos[1] + offset))
-            else:
-                positions.append((pos[0] + offset, pos[1]))
-        return positions
+    def redraw(self, new_values):
+        self.values = new_values
+        for i, row in enumerate(self.values):
+            for j, value in enumerate(row):
+                self.tiles[i][j].change_color(value)
 
 
 class KivyTile(Button):
-    def __init__(self, position, board):
+    def __init__(self, position, cars_info, kivy_board):
         super().__init__()
-        self.position = position
-        self.board = board
-        self.background_color = Constants.COLORS[self.board.values[self.position[0]][self.position[1]]]
+        self.i, self.j = position
+        self.kivy_board = kivy_board
+        self.car_value = self.kivy_board.values[self.i][self.j]  # The value of the car that the tile is on
+        self.background_color = Constants.COLORS[self.car_value]
+        self.cars_info = cars_info
 
     def on_press(self):
-        for car in self.board.cars:
-            if self.position in car.positions:
-                possible_moves = BoardLogic.car_moves(car, self.board.values)
-                if len(possible_moves):
-                    if self.position == car.positions[-1]:
-                        move = 1
-                    elif self.position == car.positions[0]:
-                        move = -1
-                    else:
-                        move = 0
+        car_positions = BoardLogic.find_car_positions(self.car_value, self.kivy_board.values)
+        possible_moves = BoardLogic.possible_moves(self.car_value, self.kivy_board.values, self.cars_info)
+        if len(possible_moves) > 0:  # If there are moves possible
+            if (self.i, self.j) == car_positions[-1]:
+                move = 1
+            elif (self.i, self.j) == car_positions[0]:
+                move = -1
+            else:
+                move = 0
+            new_values = BoardLogic.make_move(self.car_value, move, self.kivy_board.values, self.cars_info)
+            self.kivy_board.redraw(new_values)
 
-                    next_board = BoardLogic.next_board(car, move, self.board.values)
-                    if next_board:
-                        self.board.values = next_board
-                        self.parent.redraw()
-
-    def change_color(self, new_color):
-        self.background_color = new_color
+    def change_color(self, value):
+        self.background_color = Constants.COLORS[value]
 
 
 class MyApp(App):

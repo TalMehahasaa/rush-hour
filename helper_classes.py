@@ -3,7 +3,7 @@ from copy import deepcopy
 
 
 class Constants:
-    SIZE = 6
+    SIZE = 4
     COLORS = {
         "X": (1, 0, 0, 1),
         "A": (.2, .9, .5, 1),
@@ -30,6 +30,13 @@ class Direction(Enum):
     vertical = 2
 
 
+class Difficulty(Enum):
+    easy = 1
+    normal = 2
+    hard = 3
+    expert = 4
+
+
 class BoardLogic:
     @staticmethod
     def print_board(values):
@@ -39,60 +46,71 @@ class BoardLogic:
         print("****************")
 
     @staticmethod
-    def car_moves(car, values):
-        possible_moves = []
-        if car.direction == Direction.horizontal:
-            line = values[car.positions[0][0]]  # Get the row the car is in
-            indices_of_car = list(zip(*car.positions))[1]  # The indices of the car in the row
-        else:
-            line = [values[i][car.positions[0][1]] for i in
-                    range(Constants.SIZE)]  # Get the column the car is in
-            indices_of_car = list(zip(*car.positions))[0]  # The indices of the car in the column
+    def find_car_positions(car_value, values):
+        positions = []
+        for i, row in enumerate(values):
+            for j, value in enumerate(row):
+                if value == car_value:
+                    positions.append((i, j))
+        return positions
 
-        first = indices_of_car[0]  # The first index of the car
-        last = indices_of_car[-1]  # The last index of the car
-
-        counter = 1
-        for index in range(first - 1, -1, -1):  # Check moves before car
-            if line[index] == "_":  # The cell is empty
-                possible_moves.append(-counter)
-                counter += 1
-            else:  # The cell contains a car
-                break
-
-        counter = 1
-        for index in range(last + 1, Constants.SIZE):  # Check moves after car
-            if line[index] == "_":  # The cell is empty
-                possible_moves.append(counter)
-                counter += 1
-            else:  # The cell contains a car
-                break
-
-        return possible_moves
+    #####################################################################
+    #                           Graphical Logic                         #
+    #####################################################################
 
     @staticmethod
-    def next_board(car, move, values):
-        if move in BoardLogic.car_moves(car, values):  # If the move is valid
+    def possible_moves(car_value, values, cars_info):
+        if car_value != "_":
+            car_positions = BoardLogic.find_car_positions(car_value, values)
+            possible_moves = []
+            if cars_info[car_value][0] == Direction.horizontal:
+                line = values[car_positions[0][0]]  # Get the row the car is in
+                indices_of_car = list(zip(*car_positions))[1]  # The indices of the car in the row
+            else:
+                line = [values[i][car_positions[0][1]] for i in
+                        range(Constants.SIZE)]  # Get the column the car is in
+                indices_of_car = list(zip(*car_positions))[0]  # The indices of the car in the column
+
+            first = indices_of_car[0]  # The first index of the car
+            last = indices_of_car[-1]  # The last index of the car
+
+            counter = 1
+            for index in range(first - 1, -1, -1):  # Check moves before car
+                if line[index] == "_":  # The cell is empty
+                    possible_moves.append(-counter)
+                    counter += 1
+                else:  # The cell contains a car
+                    break
+
+            counter = 1
+            for index in range(last + 1, Constants.SIZE):  # Check moves after car
+                if line[index] == "_":  # The cell is empty
+                    possible_moves.append(counter)
+                    counter += 1
+                else:  # The cell contains a car
+                    break
+
+            return possible_moves
+        return []
+
+    @staticmethod
+    def make_move(car_value, move, values, cars_info):
+        car_positions = BoardLogic.find_car_positions(car_value, values)
+        if move in BoardLogic.possible_moves(car_value, values, cars_info):  # If the move is valid
             new_positions = []
-            for i, j in car.positions:
-                if car.direction == Direction.vertical:
+            for i, j in car_positions:
+                if cars_info[car_value][0] == Direction.vertical:
                     new_positions.append((i + move, j))
                 else:
                     new_positions.append((i, j + move))
 
             new_values = deepcopy(values)
-            for i, j in car.positions:
+
+            for i, j in car_positions:  # Remove previous car position
                 new_values[i][j] = "_"
-            for i, j in new_positions:
-                new_values[i][j] = car.value
 
-            car.positions = new_positions
+            for i, j in new_positions:  # Put car in it's new position
+                new_values[i][j] = car_value
+            BoardLogic.print_board(new_values)
             return new_values
-
-    @staticmethod
-    def next_boards(cars, values):
-        next_boards = []
-        for car in cars:
-            for move in BoardLogic.car_moves(car, values):
-                next_boards.append(BoardLogic.next_board(car, move, values))
-        return next_boards
+        return values
