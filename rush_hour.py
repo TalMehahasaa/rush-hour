@@ -104,6 +104,15 @@ class KivyTile(Button):
                 new_values = BoardLogic.make_move(self.car, move, self.kivy_board.values)
                 self.kivy_board.redraw(new_values)
 
+        # print("*************")
+        # BoardLogic.print_board(self.kivy_board.values)
+        # print("*************\n")
+        # next_boards = BoardLogic.next_boards(self.kivy_board.values, self.kivy_board.cars_info)
+        # for index, board in enumerate(next_boards):
+        #     print("Next board #", index + 1)
+        #     BoardLogic.print_board(board)
+        #     print()
+
     def change_color(self, value):
         self.background_color = Constants.COLORS[value]
 

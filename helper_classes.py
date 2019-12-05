@@ -52,6 +52,62 @@ class BoardLogic:
                     positions.append((i, j))
         return positions
 
+    @staticmethod
+    def next_boards(board, cars_info):
+        next_boards = []
+        for i, row in enumerate(board):
+            for j, value in enumerate(row):
+                if value == "_":
+                    if i != 0:  # If there is a cell above
+                        car_value = board[i - 1][j]
+                        if car_value != "_":  # If there is a car in the above cell
+                            if cars_info[car_value][0] == Direction.vertical:  # If the car above moves vertically
+                                next_board = deepcopy(board)
+                                car_length = cars_info[car_value][1]
+                                # Move the car
+                                next_board[i - car_length][j] = "_"
+                                next_board[i][j] = car_value
+                                # Add the next board to the next boards list
+                                next_boards.append(next_board)
+
+                    if j != 0:  # If there is a cell to the left
+                        car_value = board[i][j - 1]
+                        if car_value != "_":  # If there is a car in the cell to the left
+                            if cars_info[car_value][0] == Direction.horizontal:  # If the left car moves horizontally
+                                next_board = deepcopy(board)
+                                car_length = cars_info[car_value][1]
+                                # Move the car
+                                next_board[i][j - car_length] = "_"
+                                next_board[i][j] = car_value
+                                # Add the next board to the next boards list
+                                next_boards.append(next_board)
+
+                    if i != Constants.SIZE - 1:  # If there is a cell below
+                        car_value = board[i + 1][j]
+                        if car_value != "_":  # If there is a car below
+                            if cars_info[car_value][0] == Direction.vertical:  # If the below car moves vertically
+                                next_board = deepcopy(board)
+                                car_length = cars_info[car_value][1]
+                                # Move the car
+                                next_board[i + car_length][j] = "_"
+                                next_board[i][j] = car_value
+                                # Add the next board to the next boards list
+                                next_boards.append(next_board)
+
+                    if j != Constants.SIZE - 1:  # If there is a cell to the left
+                        car_value = board[i][j + 1]
+                        if car_value != "_":  # If there is a car to the left
+                            if cars_info[car_value][0] == Direction.horizontal:  # If the left car moves horizontally
+                                next_board = deepcopy(board)
+                                car_length = cars_info[car_value][1]
+                                # Move the car
+                                next_board[i][j + car_length] = "_"
+                                next_board[i][j] = car_value
+                                # Add the next board to the next boards list
+                                next_boards.append(next_board)
+
+        return next_boards
+
     #####################################################################
     #                           Graphical Logic                         #
     #####################################################################
