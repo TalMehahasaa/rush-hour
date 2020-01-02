@@ -15,16 +15,36 @@ class Wrapper(GridLayout):
 
 
 class SolveButton(Button):
+    def __init__(self):
+        super().__init__()
+        self.pointer = None
+        self.event = None
+
     def on_press(self):
-        linked_list = BoardLogic.bfs(Node(self.parent.board.values), self.parent.board.cars_info)
-        pointer = reverse_list(linked_list)
-        size = 0
-        while pointer:
-            BoardLogic.print_board(pointer.value)
-            print()
-            pointer = pointer.parent
-            size += 1
-        print(size, "moves to solve")
+        if not self.event:
+            linked_list = BoardLogic.bfs(Node(self.parent.board.values), self.parent.board.cars_info)
+            linked_list = reverse_list(linked_list)
+            pointer = linked_list
+            size = 0
+            while pointer:
+                BoardLogic.print_board(pointer.value)
+                print()
+                pointer = pointer.parent
+                size += 1
+            print(size, "moves to solve")
+            self.pointer = linked_list.parent
+            self.event = Clock.schedule_interval(lambda a: self.callback(), .5)
+            self.text = "Stop"
+        else:
+            Clock.unschedule(self.event)
+            self.event = None
+            self.pointer = None
+            self.text = "Solve"
+
+    def callback(self):
+        if self.pointer:
+            self.parent.board.redraw(self.pointer.value)
+            self.pointer = self.pointer.parent
 
 
 def reverse_list(head):
