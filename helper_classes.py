@@ -3,7 +3,7 @@ from copy import deepcopy
 
 
 class Constants:
-    SIZE = 4
+    SIZE = 6
     COLORS = {
         "X": (1, 0, 0, 1),
         "A": (.2, .9, .5, 1),
@@ -12,7 +12,7 @@ class Constants:
         "D": (1, .5, .5, 1),
         "E": (.3, 0, .7, 1),
         "F": (0, .4, .2, 1),
-        "G": (1, 1, 1, 1),
+        "G": (.05, .05, .2, 1),
         "H": (1, 1, .8, 1),
         "I": (1, 1, .5, 1),
         "J": (.25, .15, .1, 1),
@@ -30,18 +30,19 @@ class Direction(Enum):
     vertical = 2
 
 
-class Difficulty(Enum):
-    easy = 1
-    normal = 2
-    hard = 3
-    expert = 4
+class Node:
+    def __init__(self, value, parent=None):
+        self.value = value
+        self.parent = parent
 
 
 class BoardLogic:
     @staticmethod
     def print_board(values):
         for row in values:
-            print(row)
+            for value in row:
+                print(value, end=" ")
+            print()
 
     @staticmethod
     def find_car_positions(car_value, values):
@@ -68,7 +69,7 @@ class BoardLogic:
                                 next_board[i - car_length][j] = "_"
                                 next_board[i][j] = car_value
                                 # Add the next board to the next boards list
-                                next_boards.append(next_board)
+                                next_boards.append(Node(next_board))
 
                     if j != 0:  # If there is a cell to the left
                         car_value = board[i][j - 1]
@@ -80,7 +81,7 @@ class BoardLogic:
                                 next_board[i][j - car_length] = "_"
                                 next_board[i][j] = car_value
                                 # Add the next board to the next boards list
-                                next_boards.append(next_board)
+                                next_boards.append(Node(next_board))
 
                     if i != Constants.SIZE - 1:  # If there is a cell below
                         car_value = board[i + 1][j]
@@ -92,21 +93,48 @@ class BoardLogic:
                                 next_board[i + car_length][j] = "_"
                                 next_board[i][j] = car_value
                                 # Add the next board to the next boards list
-                                next_boards.append(next_board)
+                                next_boards.append(Node(next_board))
 
-                    if j != Constants.SIZE - 1:  # If there is a cell to the left
+                    if j != Constants.SIZE - 1:  # If there is a cell to the right
                         car_value = board[i][j + 1]
-                        if car_value != "_":  # If there is a car to the left
-                            if cars_info[car_value][0] == Direction.horizontal:  # If the left car moves horizontally
+                        if car_value != "_":  # If there is a car to the right
+                            if cars_info[car_value][0] == Direction.horizontal:  # If the right car moves horizontally
                                 next_board = deepcopy(board)
                                 car_length = cars_info[car_value][1]
                                 # Move the car
                                 next_board[i][j + car_length] = "_"
                                 next_board[i][j] = car_value
                                 # Add the next board to the next boards list
-                                next_boards.append(next_board)
+                                next_boards.append(Node(next_board))
 
         return next_boards
+
+    @staticmethod
+    def is_winning_state(board):
+        winning_row = board[Constants.SIZE // 2 - 1]
+        x_pos = 100
+        for index, cell in enumerate(winning_row):
+            if cell == "X":
+                x_pos = index
+            elif index > x_pos and cell != "_":  # There is a car blocking the exit
+                return False
+        return True
+
+    @staticmethod
+    def bfs(start, cars_info):
+        visited = [start.value]
+        current_boards = [start]
+        while current_boards:
+            next_boards = []
+            for current_board in current_boards:
+                for next_board in BoardLogic.next_boards(current_board.value, cars_info):
+                    if next_board.value not in visited:
+                        visited.append(next_board.value)
+                        next_board.parent = current_board
+                        if BoardLogic.is_winning_state(next_board.value):
+                            return next_board
+                        next_boards.append(next_board)
+            current_boards = next_boards
 
     #####################################################################
     #                           Graphical Logic                         #
