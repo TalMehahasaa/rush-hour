@@ -25,7 +25,7 @@ class SolveButton(Button):
             linked_list = BoardLogic.bfs(Node(self.parent.board.values), self.parent.board.cars_info)
             linked_list = reverse_list(linked_list)
             pointer = linked_list
-            size = 0
+            size = -1
             while pointer:
                 BoardLogic.print_board(pointer.value)
                 print()
@@ -33,13 +33,14 @@ class SolveButton(Button):
                 size += 1
             print(size, "moves to solve")
             self.pointer = linked_list.parent
-            self.event = Clock.schedule_interval(lambda a: self.callback(), .5)
+            self.event = Clock.schedule_interval(lambda a: self.callback(), Constants.INTERVAL_TIME)
             self.text = "Stop"
         else:
             Clock.unschedule(self.event)
             self.event = None
             self.pointer = None
             self.text = "Solve"
+            self.parent.board.update_cars()  # Update cars attribute for the player to be able to continue playing
 
     def callback(self):
         if self.pointer:
@@ -60,6 +61,7 @@ class Board(GridLayout):
         self.cols = Constants.SIZE
         self.values = None
         self.cars_info = None
+        self.cars = None
         self._create_starting_board()
 
         self.tiles = []
@@ -72,84 +74,15 @@ class Board(GridLayout):
             self.tiles.append(row)
 
     def _create_starting_board(self):
-        # self.values = [
-        #     ["_", "_", "Q", "Q", "Q", "_"],
-        #     ["_", "_", "_", "A", "C", "C"],
-        #     ["_", "X", "X", "A", "_", "P"],
-        #     ["_", "D", "_", "B", "B", "P"],
-        #     ["_", "D", "_", "_", "_", "P"],
-        #     ["_", "E", "E", "_", "_", "_"],
-        # ]
-        #
-        # self.cars_info = {
-        #     "X": (Direction.horizontal, 2),
-        #     "A": (Direction.vertical, 2),
-        #     "B": (Direction.horizontal, 2),
-        #     "C": (Direction.horizontal, 2),
-        #     "D": (Direction.vertical, 2),
-        #     "E": (Direction.horizontal, 2),
-        #     "P": (Direction.vertical, 3),
-        #     "Q": (Direction.horizontal, 3)
-        # }
+        self.values = BoardLogic.get_values()
 
-        # self.values = [
-        #     ["_"] * 4,
-        #     ["X", "X", "_", "A"],
-        #     ["B", "_", "_", "A"],
-        #     ["B", "P", "P", "P"]
-        # ]
-        # self.cars_info = {
-        #     "X": (Direction.horizontal, 2),
-        #     "A": (Direction.vertical, 2),
-        #     "B": (Direction.vertical, 2),
-        #     "P": (Direction.horizontal, 3)
-        # }
+        self.cars_info = BoardLogic.get_cars_info(self.values)
+        self.update_cars()
 
-        self.values = Board.get_values()
-
-        # self.cars_info = {
-        #     "X": (Direction.horizontal, 2),
-        #     "A": (Direction.vertical, 2),
-        #     "B": (Direction.vertical, 2),
-        #     "C": (Direction.horizontal, 2),
-        #     "D": (Direction.vertical, 2),
-        #     "E": (Direction.vertical, 2),
-        #     "F": (Direction.vertical, 2),
-        #     "G": (Direction.vertical, 2),
-        #     "H": (Direction.vertical, 2),
-        #     "I": (Direction.horizontal, 2),
-        #     "P": (Direction.vertical, 3),
-        #     "Q": (Direction.vertical, 3),
-        # }
-
-        self.cars_info = {
-            "X": (Direction.horizontal, 2),
-            "A": (Direction.vertical, 2),
-            "B": (Direction.horizontal, 2),
-            "C": (Direction.vertical, 2),
-            "D": (Direction.vertical, 2),
-            "E": (Direction.vertical, 2),
-            "F": (Direction.vertical, 2),
-            "G": (Direction.horizontal, 2),
-            "H": (Direction.horizontal, 2),
-            "I": (Direction.horizontal, 2),
-            "P": (Direction.vertical, 3),
-            "Q": (Direction.vertical, 3),
-            "R": (Direction.horizontal, 3),
-        }
-
+    def update_cars(self):
         self.cars = dict()
         for key in self.cars_info.keys():
             self.cars[key] = Car(key, self)
-
-    @staticmethod
-    def get_values():
-        values = []
-        lst = "__ABBP __A_CP _XX_CP QDERRR QDEFGG QHHFII".split()
-        # lst = "ABCCPD AB_EPD XXFEPG __FQ_G __HQ__ __HQII".split()
-        for i in range(Constants.SIZE):
-            values.append(list(lst[i]))
-        return values
 
     def make_move(self, car, move):
         if move in BoardLogic.possible_moves(car, self.values):  # If the move is valid

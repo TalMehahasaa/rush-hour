@@ -24,10 +24,17 @@ class Constants:
         "_": (1, 1, 1, 1)
     }
 
+    BOARDS = [
+        "__ABBP __A_CP _XX_CP QDERRR QDEFGG QHHFII".split(),
+        "ABCCPD AB_EPD XXFEPG __FQ_G __HQ__ __HQII".split(),
+    ]
+
+    INTERVAL_TIME = .07
+
 
 class Direction(Enum):
-    horizontal = 1
-    vertical = 2
+    horizontal = 0
+    vertical = 1
 
 
 class Node:
@@ -37,6 +44,32 @@ class Node:
 
 
 class BoardLogic:
+    @staticmethod
+    def get_values():
+        values = []
+        lst = Constants.BOARDS[0]
+        for i in range(Constants.SIZE):
+            values.append(list(lst[i]))
+        return values
+
+    @staticmethod
+    def get_cars_info(board):
+        cars_info = dict()
+        for row in board:
+            for j, value in enumerate(row):
+                if value != "_" and value not in cars_info.keys():
+                    length = 3 if value >= "O" else 2
+                    if value == "X":
+                        length = 2
+                    if j > 0 and row[j - 1] == value:
+                        direction = Direction.horizontal
+                    elif j < Constants.SIZE - 1 and row[j + 1] == value:
+                        direction = Direction.horizontal
+                    else:
+                        direction = Direction.vertical
+                    cars_info[value] = (direction, length)
+        return cars_info
+
     @staticmethod
     def print_board(values):
         for row in values:
@@ -137,7 +170,7 @@ class BoardLogic:
             current_boards = next_boards
 
     #####################################################################
-    #                           Graphical Logic                         #
+    #                           Player Logic                         #
     #####################################################################
 
     @staticmethod
