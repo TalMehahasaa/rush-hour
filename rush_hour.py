@@ -1,8 +1,10 @@
 from kivy.app import App
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.button import Button
-from helper_classes import Constants, Direction, BoardLogic, Node
 from kivy.clock import Clock
+from kivy.uix.button import Button
+from kivy.uix.gridlayout import GridLayout
+
+from board_logic import BoardLogic
+from helper_classes import Constants, Direction, Node
 
 
 class Wrapper(GridLayout):
@@ -17,35 +19,46 @@ class Wrapper(GridLayout):
 class SolveButton(Button):
     def __init__(self):
         super().__init__()
-        self.pointer = None
-        self.event = None
+        self.current_board = None  # The board being displayed on the screen
+        self.event = None  # The animation object. Used to start/ stop the animation
+        self.text = "Solve"
 
     def on_press(self):
-        if not self.event:
-            linked_list = BoardLogic.bfs(Node(self.parent.board.values), self.parent.board.cars_info)
-            linked_list = reverse_list(linked_list)
-            pointer = linked_list
-            size = -1
-            while pointer:
-                BoardLogic.print_board(pointer.value)
-                print()
-                pointer = pointer.parent
-                size += 1
-            print(size, "moves to solve")
-            self.pointer = linked_list.parent
-            self.event = Clock.schedule_interval(lambda a: self.callback(), Constants.INTERVAL_TIME)
-            self.text = "Stop"
-        else:
-            Clock.unschedule(self.event)
-            self.event = None
-            self.pointer = None
-            self.text = "Solve"
-            self.parent.board.update_cars()  # Update cars attribute for the player to be able to continue playing
+        if self.text == "Solve":  # If the player clicked Solve
+            winning_path = self.get_winning_path()  # Solve the board and get the shortest solution linked list
 
-    def callback(self):
-        if self.pointer:
-            self.parent.board.redraw(self.pointer.value)
-            self.pointer = self.pointer.parent
+            number_of_moves_to_solve = length_of_linked_list(winning_path)
+            print(number_of_moves_to_solve, "moves to solve")  # Print the number of moves of the solution
+
+            self.current_board = winning_path.parent
+            self.event = Clock.schedule_interval(self.callback, Constants.INTERVAL_TIME)  # Start the animation
+
+            self.text = "Stop"
+
+        else:  # If the player clicked Stop
+            Clock.unschedule(self.event)
+            self.current_board = None
+
+            self.parent.board.update_cars()  # Update cars attribute for the player to be able to continue playing
+            self.text = "Solve"
+
+    def callback(self, dt):
+        if self.current_board:
+            self.parent.board.redraw(self.current_board.value)
+            self.current_board = self.current_board.parent
+        else:  # The board is solved
+            Clock.unschedule(self.event)  # Stop the animation
+            self.parent.board.update_cars()  # Update cars attribute for the player to be able to continue playing
+            # TODO: Make the car exit
+            self.text = "Done"
+
+    def get_winning_path(self):
+        current_board = Node(self.parent.board.values)
+        cars_info = self.parent.board.cars_info
+        path_to_solve = reverse_list(
+            BoardLogic.bfs(current_board, cars_info)
+        )  # A linked list of the boards leading to a winning solution
+        return path_to_solve
 
 
 def reverse_list(head):
@@ -53,6 +66,15 @@ def reverse_list(head):
     while head:
         head.parent, head, new_head = new_head, head.parent, head
     return new_head
+
+
+def length_of_linked_list(linked_list):
+    counter = 0
+    pointer = linked_list.parent
+    while pointer:
+        counter += 1
+        pointer = pointer.parent
+    return counter
 
 
 class Board(GridLayout):
