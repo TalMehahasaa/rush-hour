@@ -1,14 +1,93 @@
+#: import sysexit sys.exit
+#: import * rush_hour
+#: import * screens
+
+MyScreenManager:
+    MenuScreen:
+    LevelsMenuScreen:
+    GameScreen:
+
+<Button>:
+    font_size: 80
+    bold: True
+
+<GameScreen>:
+    name: "game"
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: 5, 5
+        Board:
+            id: board
+        BoxLayout:
+            size_hint_y: .15
+            orientation: 'horizontal'
+            spacing: 5, 5
+            RestartButton:
+            SolveButton:
+                id: solve_button
+            Button:
+                text: "Back"
+                on_release:
+                    app.root.current = 'levels_menu'
+                    root.manager.transition.direction = "right"
+                    solve_button.stop_animation()
+
+<MenuScreen>:
+    name: "main_menu"
+    BoxLayout:
+        orientation: 'vertical'
+        Button:
+            text: "Play"
+            on_release:
+                app.root.current = 'levels_menu'
+                root.manager.transition.direction = "left"
+        Button:
+            text: "Instructions"
+            on_release:
+                app.root.current = 'instructions'
+                root.manager.transition.direction = "left"
+
+        Button:
+            text: "Quit"
+            on_release:
+                sysexit(0)
+
+<LevelsMenuScreen>:
+    name: "levels_menu"
+    BoxLayout:
+        orientation: 'vertical'
+        Button:
+            text: "Easy"
+            on_release:
+                app.root.current = 'game'
+                root.manager.transition.direction = "left"
+        Button:
+            text: "Medium"
+            on_release:
+                root.manager.transition.direction = "left"
+        Button:
+            text: "Hard"
+            on_release:
+                root.manager.transition.direction = "left"
+        Button:
+            text: "Back"
+            on_release:
+                app.root.current = 'main_menu'
+                root.manager.transition.direction = "right"
+
+
 <Tile>:
     background_normal: ""
 
 <Board>:
     spacing: 5, 5
+    cols: 6
+
+<GameButtons>:
+    size_hint_y: .15
 
 <SolveButton>:
     text: "Solve"
-    size_hint_y: 0.15
-    font_size: 75
-    bold: True
 
-<Wrapper>:
-    spacing: 5, 5
+<RestartButton>:
+    text: "Restart"

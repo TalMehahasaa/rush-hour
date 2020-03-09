@@ -5,48 +5,6 @@ from helper_classes import Node, Constants, Direction
 
 class BoardLogic:
     @staticmethod
-    def get_values():
-        values = []
-        lst = Constants.BOARDS[0]
-        for i in range(Constants.SIZE):
-            values.append(list(lst[i]))
-        return values
-
-    @staticmethod
-    def get_cars_info(board):
-        cars_info = dict()
-        for row in board:
-            for j, value in enumerate(row):
-                if value != "_" and value not in cars_info.keys():
-                    length = 3 if value >= "O" else 2
-                    if value == "X":
-                        length = 2
-                    if j > 0 and row[j - 1] == value:
-                        direction = Direction.horizontal
-                    elif j < Constants.SIZE - 1 and row[j + 1] == value:
-                        direction = Direction.horizontal
-                    else:
-                        direction = Direction.vertical
-                    cars_info[value] = (direction, length)
-        return cars_info
-
-    @staticmethod
-    def print_board(values):
-        for row in values:
-            for value in row:
-                print(value, end=" ")
-            print()
-
-    @staticmethod
-    def find_car_positions(car_value, values):
-        positions = []
-        for i, row in enumerate(values):
-            for j, value in enumerate(row):
-                if value == car_value:
-                    positions.append((i, j))
-        return positions
-
-    @staticmethod
     def next_boards(board, cars_info):
         next_boards = []
         for i, row in enumerate(board):
@@ -136,57 +94,81 @@ class BoardLogic:
     #####################################################################
 
     @staticmethod
+    def decrypt_values(encrypted_board):
+        """
+        Get the initial values of a board
+        :param encrypted_board: A string that represents a starting board and is easy to write
+        :return: A matrix that represents the board non-graphically
+        """
+        values = []
+        # TODO: Implement choosing different boards
+        for i in range(Constants.SIZE):
+            values.append(list(encrypted_board[i]))
+        return values
+
+    @staticmethod
+    def find_cars_info(values):
+        """Finds the orientation and length of each car"""
+        cars_info = dict()
+        for row in values:
+            for j, value in enumerate(row):
+                if value != "_" and value not in cars_info.keys():
+                    length = 3 if value >= "O" else 2
+                    if value == "X":
+                        length = 2
+                    if j > 0 and row[j - 1] == value:
+                        direction = Direction.horizontal
+                    elif j < Constants.SIZE - 1 and row[j + 1] == value:
+                        direction = Direction.horizontal
+                    else:
+                        direction = Direction.vertical
+                    cars_info[value] = (direction, length)
+        return cars_info
+
+    @staticmethod
+    def find_car_positions(car_value, values):
+        positions = []
+        for i, row in enumerate(values):
+            for j, value in enumerate(row):
+                if value == car_value:
+                    positions.append((i, j))
+        return positions
+
+    @staticmethod
     def possible_moves(car, values):
-        if car.value != "_":  # If this is a car
-            possible_moves = []
-            if car.direction == Direction.horizontal:
-                line = values[car.positions[0][0]]  # Get the row the car is in
-                indices_of_car = list(zip(*car.positions))[1]  # The indices of the car in the row
-            else:
-                line = [values[i][car.positions[0][1]] for i in range(Constants.SIZE)]  # Get the column the car is in
-                indices_of_car = list(zip(*car.positions))[0]  # The indices of the car in the column
-
-            first = indices_of_car[0]  # The first index of the car
-            last = indices_of_car[-1]  # The last index of the car
-
-            counter = 1
-            for index in range(first - 1, -1, -1):  # Check moves before car
-                if line[index] == "_":  # The cell is empty
-                    possible_moves.append(-counter)
-                    counter += 1
-                else:  # The cell contains a car
-                    break
-
-            counter = 1
-            for index in range(last + 1, Constants.SIZE):  # Check moves after car
-                if line[index] == "_":  # The cell is empty
-                    possible_moves.append(counter)
-                    counter += 1
-                else:  # The cell contains a car
-                    break
-
-            return possible_moves
-        return []
+        possible_moves = []
+        if car.direction == Direction.horizontal:
+            i, j = car.positions[0]
+            if j - 1 != -1 and values[i][j - 1] == "_":
+                possible_moves.append(-1)
+            i, j = car.positions[-1]
+            if j + 1 != Constants.SIZE and values[i][j + 1] == "_":
+                possible_moves.append(1)
+        else:
+            i, j = car.positions[0]
+            if i - 1 != -1 and values[i - 1][j] == "_":
+                possible_moves.append(-1)
+            i, j = car.positions[-1]
+            if i + 1 != Constants.SIZE and values[i + 1][j] == "_":
+                possible_moves.append(1)
+        return possible_moves
 
     @staticmethod
     def make_move(car, move, values):
-        if move in BoardLogic.possible_moves(car, values):  # If the move is valid
-            new_positions = []
-            for i, j in car.positions:
-                if car.direction == Direction.vertical:
-                    new_positions.append((i + move, j))
-                else:
-                    new_positions.append((i, j + move))
+        new_positions = []
+        for i, j in car.positions:
+            if car.direction == Direction.vertical:
+                new_positions.append((i + move, j))
+            else:
+                new_positions.append((i, j + move))
 
-            new_values = deepcopy(values)
+        new_values = deepcopy(values)
 
-            for i, j in car.positions:  # Remove previous car position
-                new_values[i][j] = "_"
+        for i, j in car.positions:  # Remove previous car position
+            new_values[i][j] = "_"
 
-            for i, j in new_positions:  # Put car in it's new position
-                new_values[i][j] = car.value
+        for i, j in new_positions:  # Put car in it's new position
+            new_values[i][j] = car.value
 
-            car.positions = new_positions
-            return new_values
-
-        return values
+        car.positions = new_positions
+        return new_values
