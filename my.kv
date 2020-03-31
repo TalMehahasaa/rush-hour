@@ -1,18 +1,17 @@
 #: import sysexit sys.exit
 #: import * rush_hour
 #: import * screens
+#: import Difficulty helper_classes.Difficulty
 
-MyScreenManager:
-    MenuScreen:
-    LevelsMenuScreen:
-    GameScreen:
 
-<Button>:
+
+<CustomButton>:
     font_size: 80
     bold: True
 
 <GameScreen>:
     name: "game"
+    board: board
     BoxLayout:
         orientation: 'vertical'
         spacing: 5, 5
@@ -23,9 +22,11 @@ MyScreenManager:
             orientation: 'horizontal'
             spacing: 5, 5
             RestartButton:
+                text: "Restart"
             SolveButton:
+                text: "Solve"
                 id: solve_button
-            Button:
+            CustomButton:
                 text: "Back"
                 on_release:
                     app.root.current = 'levels_menu'
@@ -36,58 +37,90 @@ MyScreenManager:
     name: "main_menu"
     BoxLayout:
         orientation: 'vertical'
-        Button:
+        CustomButton:
             text: "Play"
             on_release:
                 app.root.current = 'levels_menu'
                 root.manager.transition.direction = "left"
-        Button:
+        CustomButton:
             text: "Instructions"
             on_release:
                 app.root.current = 'instructions'
                 root.manager.transition.direction = "left"
-
-        Button:
+        CustomButton:
             text: "Quit"
             on_release:
                 sysexit(0)
+
+<InstructionsScreen>:
+    name: "instructions"
+
 
 <LevelsMenuScreen>:
     name: "levels_menu"
     BoxLayout:
         orientation: 'vertical'
-        Button:
-            text: "Easy"
+        CustomButton:
+            text: "Beginner"
             on_release:
                 app.root.current = 'game'
                 root.manager.transition.direction = "left"
-        Button:
-            text: "Medium"
+                board = root.manager.get_screen('game').board
+                board.create_board(Difficulty.beginner)
+
+        CustomButton:
+            text: "Intermediate"
             on_release:
+                app.root.current = 'game'
                 root.manager.transition.direction = "left"
-        Button:
-            text: "Hard"
+                board = root.manager.get_screen('game').board
+                board.create_board(Difficulty.intermediate)
+        CustomButton:
+            text: "Advanced"
             on_release:
+                app.root.current = 'game'
                 root.manager.transition.direction = "left"
-        Button:
+                board = root.manager.get_screen('game').board
+                board.create_board(Difficulty.advanced)
+        CustomButton:
+            text: "Expert"
+            on_release:
+                app.root.current = 'game'
+                root.manager.transition.direction = "left"
+                board = root.manager.get_screen('game').board
+                board.create_board(Difficulty.expert)
+        CustomButton:
             text: "Back"
             on_release:
                 app.root.current = 'main_menu'
                 root.manager.transition.direction = "right"
 
-
 <Tile>:
     background_normal: ""
 
 <Board>:
+#    id: board
     spacing: 5, 5
     cols: 6
 
-<GameButtons>:
-    size_hint_y: .15
 
-<SolveButton>:
-    text: "Solve"
-
-<RestartButton>:
-    text: "Restart"
+<WinningMessage>:
+    id: pop
+    title: "You won!"
+    size_hint: .8, .8
+    pos_hint: {"center_x": .5, "center_y": .5}
+    BoxLayout:
+        orientation: "vertical"
+        Label:
+            text: "Good job! You have escaped the traffic jam!"
+        Button:
+            text: "Restart this board"
+            on_release:
+                pop.dismiss()
+                pop.board.restart()
+        Button:
+            text: "Choose another board"
+            on_release:
+                pop.dismiss()
+                app.root.current = 'levels_menu'
+                app.root.transition.direction = "right"

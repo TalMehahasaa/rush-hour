@@ -1,14 +1,18 @@
 from kivy.app import App
-from kivy.lang import Builder
+from kivy.uix.screenmanager import ScreenManager
 
-kv = Builder.load_file("my.kv")
+from screens import *
 
 
 class MyApp(App):
-
     def build(self):
         self.title = "Rush Hour"
-        return kv
+        sm = ScreenManager()
+        sm.add_widget(MenuScreen())
+        sm.add_widget(GameScreen())
+        sm.add_widget(LevelsMenuScreen())
+        sm.add_widget(InstructionsScreen())
+        return sm
 
 
 if __name__ == '__main__':

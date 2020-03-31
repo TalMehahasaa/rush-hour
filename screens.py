@@ -1,8 +1,4 @@
-from kivy.uix.screenmanager import Screen, ScreenManager
-
-
-class MyScreenManager(ScreenManager):
-    pass
+from kivy.uix.screenmanager import Screen
 
 
 class MenuScreen(Screen):
@@ -14,4 +10,8 @@ class LevelsMenuScreen(Screen):
 
 
 class GameScreen(Screen):
+    pass
+
+
+class InstructionsScreen(Screen):
     pass

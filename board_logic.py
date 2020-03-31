@@ -1,6 +1,7 @@
 from copy import deepcopy
+from random import choice
 
-from helper_classes import Node, Constants, Direction
+from helper_classes import *
 
 
 class BoardLogic:
@@ -61,19 +62,8 @@ class BoardLogic:
         return next_boards
 
     @staticmethod
-    def is_winning_state(board):
-        winning_row = board[Constants.SIZE // 2 - 1]
-        x_pos = 100
-        for index, cell in enumerate(winning_row):
-            if cell == "X":
-                x_pos = index
-            elif index > x_pos and cell != "_":  # There is a car blocking the exit
-                return False
-        return True
-
-    @staticmethod
     def bfs(start, cars_info):
-        if BoardLogic.is_winning_state(start.value):
+        if BoardLogic.is_win(start.value):
             return start
         visited = [start.value]
         current_boards = [start]
@@ -83,15 +73,48 @@ class BoardLogic:
                 for next_board in BoardLogic.next_boards(current_board.value, cars_info):
                     if next_board.value not in visited:
                         visited.append(next_board.value)
-                        next_board.parent = current_board
-                        if BoardLogic.is_winning_state(next_board.value):
+                        next_board.next = current_board
+                        if BoardLogic.is_win(next_board.value):
                             return next_board
                         next_boards.append(next_board)
             current_boards = next_boards
 
+    @staticmethod
+    def choose_board(difficulty):
+        """
+        Chooses a random starting board based on the difficulty
+        :param difficulty: The difficulty chosen by the player
+        :return: A non graphical representation of the board (values)
+        """
+        if difficulty == Difficulty.beginner:
+            chosen_board = choice(Constants.BEGINNER_BOARDS)
+        elif difficulty == Difficulty.intermediate:
+            chosen_board = choice(Constants.INTERMEDIATE_BOARDS)
+        elif difficulty == Difficulty.advanced:
+            chosen_board = choice(Constants.ADVANCED_BOARDS)
+        else:
+            chosen_board = choice(Constants.EXPERT_BOARDS)
+        return BoardLogic.decrypt_values(chosen_board)
+
     #####################################################################
     #                           Player Logic                         #
     #####################################################################
+
+    @staticmethod
+    def is_win(values):
+        """
+        Checks whether the red car can escape freely
+        :param values: A non graphical representation of a board
+        :return bool: True if win, False otherwise
+        """
+        winning_row = values[Constants.SIZE // 2 - 1]  # The row that has the red car
+        for value in winning_row[::-1]:  # Go over the row in a reversed order
+            if value == "X":  # If it sees the red car
+                return True
+            elif value == "_":  # If it sees no car
+                continue
+            else:  # If it sees a car blocking the exit
+                return False
 
     @staticmethod
     def decrypt_values(encrypted_board):
@@ -101,7 +124,6 @@ class BoardLogic:
         :return: A matrix that represents the board non-graphically
         """
         values = []
-        # TODO: Implement choosing different boards
         for i in range(Constants.SIZE):
             values.append(list(encrypted_board[i]))
         return values
