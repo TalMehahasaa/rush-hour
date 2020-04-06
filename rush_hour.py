@@ -73,13 +73,13 @@ class Tile(Button):
         self.board = board
         self.car = None
 
-    def find_car(self):
+    def _find_car(self):
         value = self.board.values[self.i][self.j]
         if value != "_":
             return self.board.cars[value]
 
     def on_press(self):
-        self.car = self.find_car()
+        self.car = self._find_car()
         if self.car:  # If the player pressed on a car
             possible_moves = BoardLogic.possible_moves(self.car, self.board.values)
             if len(possible_moves) > 0:  # If there are moves possible

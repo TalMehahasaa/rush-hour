@@ -4,35 +4,6 @@
 #: import Difficulty helper_classes.Difficulty
 
 
-
-<CustomButton>:
-    font_size: 80
-    bold: True
-
-<GameScreen>:
-    name: "game"
-    board: board
-    BoxLayout:
-        orientation: 'vertical'
-        spacing: 5, 5
-        Board:
-            id: board
-        BoxLayout:
-            size_hint_y: .15
-            orientation: 'horizontal'
-            spacing: 5, 5
-            RestartButton:
-                text: "Restart"
-            SolveButton:
-                text: "Solve"
-                id: solve_button
-            CustomButton:
-                text: "Back"
-                on_release:
-                    app.root.current = 'levels_menu'
-                    root.manager.transition.direction = "right"
-                    solve_button.stop_animation()
-
 <MenuScreen>:
     name: "main_menu"
     BoxLayout:
@@ -52,8 +23,25 @@
             on_release:
                 sysexit(0)
 
+
 <InstructionsScreen>:
     name: "instructions"
+    BoxLayout:
+        orientation: "vertical"
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        Image:
+            source: "images/instructions.png"
+        CustomButton:
+            text: "Back"
+            size_hint_y: .15
+            on_release:
+                app.root.current = 'main_menu'
+                root.manager.transition.direction = "right"
 
 
 <LevelsMenuScreen>:
@@ -95,13 +83,35 @@
                 app.root.current = 'main_menu'
                 root.manager.transition.direction = "right"
 
-<Tile>:
-    background_normal: ""
 
-<Board>:
-#    id: board
-    spacing: 5, 5
-    cols: 6
+<GameScreen>:
+    name: "game"
+    board: board
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: 5, 5
+        Board:
+            id: board
+            spacing: 5, 5
+            cols: 6
+        BoxLayout:
+            size_hint_y: .15
+            orientation: 'horizontal'
+            spacing: 5, 5
+            CustomButton:
+                text: "Restart"
+                on_release:
+                    board.restart()
+                    solve_button.stop_animation()
+            SolveButton:
+                text: "Solve"
+                id: solve_button
+            CustomButton:
+                text: "Back"
+                on_release:
+                    app.root.current = 'levels_menu'
+                    root.manager.transition.direction = "right"
+                    solve_button.stop_animation()
 
 
 <WinningMessage>:
@@ -109,6 +119,7 @@
     title: "You won!"
     size_hint: .8, .8
     pos_hint: {"center_x": .5, "center_y": .5}
+    auto_dismiss: False
     BoxLayout:
         orientation: "vertical"
         Label:
@@ -124,3 +135,12 @@
                 pop.dismiss()
                 app.root.current = 'levels_menu'
                 app.root.transition.direction = "right"
+
+
+<CustomButton>:
+    font_size: 80
+    bold: True
+
+
+<Tile>:
+    background_normal: ""

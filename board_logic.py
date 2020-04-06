@@ -6,16 +6,16 @@ from helper_classes import *
 
 class BoardLogic:
     @staticmethod
-    def next_boards(board, cars_info):
+    def next_boards(values, cars_info):
         next_boards = []
-        for i, row in enumerate(board):
+        for i, row in enumerate(values):
             for j, value in enumerate(row):
                 if value == "_":
                     if i != 0:  # If there is a cell above
-                        car_value = board[i - 1][j]
+                        car_value = values[i - 1][j]
                         if car_value != "_":  # If there is a car in the above cell
                             if cars_info[car_value][0] == Direction.vertical:  # If the car above moves vertically
-                                next_board = deepcopy(board)
+                                next_board = deepcopy(values)
                                 car_length = cars_info[car_value][1]
                                 # Move the car
                                 next_board[i - car_length][j] = "_"
@@ -24,10 +24,10 @@ class BoardLogic:
                                 next_boards.append(Node(next_board))
 
                     if j != 0:  # If there is a cell to the left
-                        car_value = board[i][j - 1]
+                        car_value = values[i][j - 1]
                         if car_value != "_":  # If there is a car in the cell to the left
                             if cars_info[car_value][0] == Direction.horizontal:  # If the left car moves horizontally
-                                next_board = deepcopy(board)
+                                next_board = deepcopy(values)
                                 car_length = cars_info[car_value][1]
                                 # Move the car
                                 next_board[i][j - car_length] = "_"
@@ -36,10 +36,10 @@ class BoardLogic:
                                 next_boards.append(Node(next_board))
 
                     if i != Constants.SIZE - 1:  # If there is a cell below
-                        car_value = board[i + 1][j]
+                        car_value = values[i + 1][j]
                         if car_value != "_":  # If there is a car below
                             if cars_info[car_value][0] == Direction.vertical:  # If the below car moves vertically
-                                next_board = deepcopy(board)
+                                next_board = deepcopy(values)
                                 car_length = cars_info[car_value][1]
                                 # Move the car
                                 next_board[i + car_length][j] = "_"
@@ -48,10 +48,10 @@ class BoardLogic:
                                 next_boards.append(Node(next_board))
 
                     if j != Constants.SIZE - 1:  # If there is a cell to the right
-                        car_value = board[i][j + 1]
+                        car_value = values[i][j + 1]
                         if car_value != "_":  # If there is a car to the right
                             if cars_info[car_value][0] == Direction.horizontal:  # If the right car moves horizontally
-                                next_board = deepcopy(board)
+                                next_board = deepcopy(values)
                                 car_length = cars_info[car_value][1]
                                 # Move the car
                                 next_board[i][j + car_length] = "_"
@@ -63,21 +63,34 @@ class BoardLogic:
 
     @staticmethod
     def bfs(start, cars_info):
-        if BoardLogic.is_win(start.value):
-            return start
-        visited = [start.value]
-        current_boards = [start]
-        while current_boards:
-            next_boards = []
-            for current_board in current_boards:
+        """
+        :param start: The board shown on screen when the bfs is called
+        :param cars_info: Dictionary with information for each car in the board
+        :return: Path to the solved board
+        """
+        if BoardLogic.is_win(start.value):  # If the board is already solved
+            return start  # Return the starting board
+        visited = [start.value]  # Initialize the list of visited boards
+        current_boards = [start]  # List of all the boards in the current level
+        while current_boards:  # While there are boards in the current level.
+            # If this while loop finishes, there is no solution to the board inputted.
+            next_boards = []  # List of all the boards in the next level.
+            for current_board in current_boards:  # For each board in the current level.
                 for next_board in BoardLogic.next_boards(current_board.value, cars_info):
-                    if next_board.value not in visited:
+                    # For each next board that can be reached within one move from the current board.
+                    if next_board.value not in visited:  # If that next board hasn't been checked already.
                         visited.append(next_board.value)
-                        next_board.next = current_board
-                        if BoardLogic.is_win(next_board.value):
-                            return next_board
+                        # Append that next board to the list of visited boards so it won't be checked twice.
+                        next_board.next = current_board  # Set the parent of the next board to the current board.
+                        #  This is done so we'll have a path from that next board all the way to the initial board.
+                        if BoardLogic.is_win(next_board.value):  # If that next board is a solved board.
+                            return Node.reverse_list(next_board)
+                            # Return the reversed linked list of the boards representing a path to the solved board.
                         next_boards.append(next_board)
+                        # Append that next board to the list of all boards in the next level.
             current_boards = next_boards
+            # We've finished going over a level,
+            # so all the boards in the next level are now the boards in the current level.
 
     @staticmethod
     def choose_board(difficulty):

@@ -16,13 +16,6 @@ class WinningMessage(Popup):
         self.board = board
 
 
-class RestartButton(CustomButton):
-    def on_press(self):
-        board = self.parent.parent.children[1]
-        board.restart()
-        self.parent.children[1].stop_animation()
-
-
 class SolveButton(CustomButton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -38,11 +31,11 @@ class SolveButton(CustomButton):
         if self.text == "Solve":  # If the player clicked Solve
             winning_path = self._get_winning_path()  # Solve the board and get the shortest solution linked list
 
-            number_of_moves_to_solve = length_of_linked_list(winning_path)
+            number_of_moves_to_solve = Node.length_of_linked_list(winning_path)
             print(number_of_moves_to_solve, "moves to solve")  # Print the number of moves of the solution
 
             self.current_node = winning_path.next
-            self.event = Clock.schedule_interval(self._callback, Constants.INTERVAL_TIME)  # Start the animation
+            self.event = Clock.schedule_interval(self._animate, Constants.INTERVAL_TIME)  # Start the animation
 
             self.text = "Stop"
 
@@ -57,7 +50,7 @@ class SolveButton(CustomButton):
             # Update cars attribute for the player to be able to continue playing
             self.text = "Solve"
 
-    def _callback(self, _):
+    def _animate(self, _):
         if self.current_node:
             self.board.redraw(self.current_node.value)
             self.current_node = self.current_node.next
@@ -68,7 +61,6 @@ class SolveButton(CustomButton):
     def _get_winning_path(self):
         current_board = Node(self.board.values)
         cars_info = self.board.cars_info
-        path_to_solve = reverse_list(
-            BoardLogic.bfs(current_board, cars_info)
-        )  # A linked list of the boards leading to a winning solution
+        path_to_solve = BoardLogic.bfs(current_board, cars_info
+                                       )  # A linked list of the boards leading to a winning solution
         return path_to_solve

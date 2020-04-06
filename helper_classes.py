@@ -48,8 +48,9 @@ class Constants:
     ]
 
     EXPERT_BOARDS = [
-        # "AA_OOO ___BCC DXXB_P D_QEEP FFQ__P __QRRR".split(),
+        "AA_OOO ___BCC DXXB_P D_QEEP FFQ__P __QRRR".split(),
         "OAA_B_ OCD_BP OCDXXP QQQE_P __FEGG HHFII_".split(),
+        "__AOOO __AB__ XXCB_P DDCEEP FGHH_P FGII__".split(),
     ]
 
     INTERVAL_TIME = .1
@@ -72,28 +73,28 @@ class Node:
         self.value = value
         self.next = next
 
+    @staticmethod
+    def reverse_list(linked_list):
+        """
+        Creates a new linked list with a reversed order of the one inputted
+        :param Node linked_list: node
+        :return Node: reversed node
+        """
+        new_list = None
+        while linked_list:
+            linked_list.next, linked_list, new_list = new_list, linked_list.next, linked_list
+        return new_list
 
-def reverse_list(linked_list):
-    """
-    Creates a new linked list with a reversed order of the one inputted
-    :param Node linked_list: node
-    :return Node: reversed node
-    """
-    new_list = None
-    while linked_list:
-        linked_list.next, linked_list, new_list = new_list, linked_list.next, linked_list
-    return new_list
-
-
-def length_of_linked_list(linked_list):
-    """
-    Finds the length of a linked list
-    :param Node linked_list: node
-    :return int: length
-    """
-    length = 0
-    pointer = linked_list.next
-    while pointer:
-        length += 1
-        pointer = pointer.next
-    return length
+    @staticmethod
+    def length_of_linked_list(linked_list):
+        """
+        Finds the length of a linked list
+        :param Node linked_list: node
+        :return int: length
+        """
+        length = 0
+        pointer = linked_list.next
+        while pointer:
+            length += 1
+            pointer = pointer.next
+        return length
