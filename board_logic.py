@@ -7,64 +7,73 @@ from helper_classes import *
 class BoardLogic:
     @staticmethod
     def next_boards(values, cars_info):
-        next_boards = []
-        for i, row in enumerate(values):
-            for j, value in enumerate(row):
-                if value == "_":
+        """
+        :param values: A non graphical representation of a board
+        :param cars_info:  Dictionary with information for each car in the board
+        :return: List of nodes that represent all the boards that can be reached within one move from the board inputted
+        """
+        next_boards = []  # Initialize the list of next boards
+        for i, row in enumerate(values):  # For each row in the board
+            for j, value in enumerate(row):  # For each cell in the row
+                if value == "_":  # If the cell is empty
                     if i != 0:  # If there is a cell above
-                        car_value = values[i - 1][j]
-                        if car_value != "_":  # If there is a car in the above cell
+                        car_value = values[i - 1][j]  # The value of the cell above
+                        if car_value != "_":  # If the cell above is a car
                             if cars_info[car_value][0] == Direction.vertical:  # If the car above moves vertically
-                                next_board = deepcopy(values)
+                                next_board = deepcopy(values)  # Make a copy of the current board
                                 car_length = cars_info[car_value][1]
-                                # Move the car
+
+                                # Move the car:
                                 next_board[i - car_length][j] = "_"
                                 next_board[i][j] = car_value
-                                # Add the next board to the next boards list
-                                next_boards.append(Node(next_board))
+
+                                next_boards.append(Node(next_board))  # Add the next board to the next boards list
 
                     if j != 0:  # If there is a cell to the left
-                        car_value = values[i][j - 1]
-                        if car_value != "_":  # If there is a car in the cell to the left
+                        car_value = values[i][j - 1]  # The value of the cell to the left
+                        if car_value != "_":  # If the cell to the left is a car
                             if cars_info[car_value][0] == Direction.horizontal:  # If the left car moves horizontally
-                                next_board = deepcopy(values)
+                                next_board = deepcopy(values)  # Make a copy of the current board
                                 car_length = cars_info[car_value][1]
-                                # Move the car
+
+                                # Move the car:
                                 next_board[i][j - car_length] = "_"
                                 next_board[i][j] = car_value
-                                # Add the next board to the next boards list
-                                next_boards.append(Node(next_board))
+
+                                next_boards.append(Node(next_board))  # Add the next board to the next boards list
 
                     if i != Constants.SIZE - 1:  # If there is a cell below
-                        car_value = values[i + 1][j]
-                        if car_value != "_":  # If there is a car below
+                        car_value = values[i + 1][j]  # The value of the cell below
+                        if car_value != "_":  # If the cell below is a car
                             if cars_info[car_value][0] == Direction.vertical:  # If the below car moves vertically
-                                next_board = deepcopy(values)
+                                next_board = deepcopy(values)  # Make a copy of the current board
                                 car_length = cars_info[car_value][1]
-                                # Move the car
+
+                                # Move the car:
                                 next_board[i + car_length][j] = "_"
                                 next_board[i][j] = car_value
-                                # Add the next board to the next boards list
-                                next_boards.append(Node(next_board))
+
+                                next_boards.append(Node(next_board))  # Add the next board to the next boards list
 
                     if j != Constants.SIZE - 1:  # If there is a cell to the right
-                        car_value = values[i][j + 1]
-                        if car_value != "_":  # If there is a car to the right
+                        car_value = values[i][j + 1]  # The value of the cell to the right
+                        if car_value != "_":  # If the cell to the right is a car
                             if cars_info[car_value][0] == Direction.horizontal:  # If the right car moves horizontally
-                                next_board = deepcopy(values)
+                                next_board = deepcopy(values)  # Make a copy of the current board
                                 car_length = cars_info[car_value][1]
-                                # Move the car
+
+                                # Move the car:
                                 next_board[i][j + car_length] = "_"
                                 next_board[i][j] = car_value
-                                # Add the next board to the next boards list
-                                next_boards.append(Node(next_board))
+
+                                next_boards.append(Node(next_board))  # Add the next board to the next boards list
 
         return next_boards
 
     @staticmethod
     def bfs(start, cars_info):
         """
-        :param start: The board shown on screen when the bfs is called
+        :param start: A node that represents the board shown on screen when the bfs is called
         :param cars_info: Dictionary with information for each car in the board
         :return: Path to the solved board
         """
@@ -89,7 +98,7 @@ class BoardLogic:
                         next_boards.append(next_board)
                         # Append that next board to the list of all boards in the next level.
             current_boards = next_boards
-            # We've finished going over a level,
+            # We've finished going over the level,
             # so all the boards in the next level are now the boards in the current level.
 
     @staticmethod
